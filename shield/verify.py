@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 from .chain import get_chain
-from .vault import commitment
+from .vault import canonical, commitment
 
 
 def verify(bundle: dict, max_lag: float = 120) -> dict:
@@ -24,6 +24,9 @@ def verify(bundle: dict, max_lag: float = 120) -> dict:
                - datetime.fromisoformat(p["ts"].replace("Z", "+00:00"))).total_seconds()
         out.update(chain_n=on_chain["n"], chain_ts=on_chain["ts"], lag_s=round(lag, 1),
                    called_live=0 <= lag <= max_lag)
+    if "canonical" in bundle:   # the hashed text must be this payload, not some other one
+        out["canonical_matches_payload"] = bundle["canonical"] == canonical(p)
+        out["hash_ok"] = out["hash_ok"] and out["canonical_matches_payload"]
     out["valid"] = out["hash_ok"] and out["on_chain"]
     return out
 

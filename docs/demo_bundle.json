@@ -1,0 +1,16 @@
+{
+  "payload": {
+    "seq": 1,
+    "kind": "ENTRY_LONG",
+    "ts": "2026-11-11T19:23:20+00:00",
+    "price": 74000.0,
+    "r": 0.25,
+    "rmode": "LONG",
+    "reason": "SYNTHETIC DEMO RECORD - not a real trade"
+  },
+  "canonical": "{\"kind\":\"ENTRY_LONG\",\"price\":74000.0,\"r\":0.25,\"reason\":\"SYNTHETIC DEMO RECORD - not a real trade\",\"rmode\":\"LONG\",\"seq\":1,\"ts\":\"2026-11-11T19:23:20+00:00\"}",
+  "salt": "62f62a934b14c71414a92aceec9176c1",
+  "hash": "d0cdcea7b8e51f103329d74d6e5017258b27e5ff96de510e783c34aa70a1e1ce",
+  "chain": "near",
+  "chain_ref": "Bh7U7U3qtXYJ7XyQmY2KknctrA7nsTyy7nyWMG5Sqkgx"
+}

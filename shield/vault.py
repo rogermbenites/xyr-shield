@@ -129,5 +129,7 @@ class Vault:
                        r=r["r"], rmode=r["rmode"], reason=r["reason"])
         if r["fill"] is not None:
             payload["fill"] = json.loads(r["fill"])
-        return dict(payload=payload, salt=r["salt"], hash=r["hash"],
+        # `canonical` = the exact bytes that were hashed, so non-Python verifiers (the web page) can
+        # check it without re-serialising numbers (Python writes 74000.0, JavaScript writes 74000)
+        return dict(payload=payload, canonical=canonical(payload), salt=r["salt"], hash=r["hash"],
                     chain=r["chain"], chain_ref=r["chain_ref"], revealed_at=time.time())

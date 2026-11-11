@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XYR Shield</title>
+<meta name="description" content="Prove trading data is honest without revealing the strategy behind it. Commit-reveal records, attested NEAR AI stats and a no-repaint R oracle on NEAR.">
+<style>
+  :root{
+    --bg:#ffffff; --surface:#f6f7f9; --text:#16181d; --muted:#5f6672; --line:#e3e6eb;
+    --accent:#0b7a53; --bad:#b4232d; --code:#eef0f3;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d0f12; --surface:#15181d; --text:#e6e8eb; --muted:#9aa1ab; --line:#262a31;
+      --accent:#3ad69a; --bad:#ff6b74; --code:#1b1f25;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d0f12; --surface:#15181d; --text:#e6e8eb; --muted:#9aa1ab; --line:#262a31;
+    --accent:#3ad69a; --bad:#ff6b74; --code:#1b1f25;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  main{max-width:880px;margin:0 auto;padding:40px 16px 64px;overflow-wrap:break-word}
+  h1{font-size:34px;line-height:1.15;margin:0 0 10px;letter-spacing:-.01em}
+  h2{font-size:20px;margin:40px 0 12px}
+  p{margin:0 0 12px}
+  .lead{font-size:18px;color:var(--muted);max-width:640px}
+  a{color:var(--accent)}
+  code,pre,textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+  code{background:var(--code);padding:1px 5px;border-radius:4px}
+  table{width:100%;border-collapse:collapse;font-size:15px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:13px}
+  .num{font-variant-numeric:tabular-nums;font-weight:600}
+  th,.num{white-space:nowrap}
+  td a,code{overflow-wrap:anywhere}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+  textarea{width:100%;max-width:100%;min-height:210px;background:var(--code);color:var(--text);border:1px solid var(--line);
+    border-radius:8px;padding:10px;resize:vertical}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+  button,select{font:inherit;font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);
+    background:var(--bg);color:var(--text);cursor:pointer}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  #result{margin-top:12px}
+  .check{display:flex;gap:8px;padding:4px 0}
+  .ok{color:var(--accent);font-weight:600} .fail{color:var(--bad);font-weight:600}
+  .muted{color:var(--muted);font-size:14px}
+  .table-wrap{overflow-x:auto}
+  footer{margin-top:48px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<main>
+  <h1>XYR Shield</h1>
+  <p class="lead">Prove trading data is honest without revealing the strategy behind it.</p>
+  <p class="muted">Built for the NEAR HACKATHON · <a href="https://github.com/rogermbenites/xyr-shield">source on GitHub</a></p>
+
+  <h2>What stays private, what is proven</h2>
+  <div class="table-wrap"><table>
+    <tr><th>Component</th><th>Stays private</th><th>Proven on NEAR</th></tr>
+    <tr><td>Shielded trade log</td><td>every record (time, side, price, fill)</td><td>it existed at that moment and was never edited, deleted or backdated</td></tr>
+    <tr><td>Private stats API</td><td>the records behind each answer</td><td>the answer came from a TEE-attested NEAR AI model (signed receipt)</td></tr>
+    <tr><td>R oracle</td><td>how R is computed</td><td>published R history is never repainted</td></tr>
+  </table></div>
+
+  <h2>Live on NEAR testnet</h2>
+  <p class="muted">Read straight from the contracts by your browser (<code>get_count</code> via public RPC).</p>
+  <div class="table-wrap"><table id="contracts">
+    <tr><th>Contract</th><th>Holds</th><th>Commits</th></tr>
+  </table></div>
+
+  <h2>Try it: verify a record</h2>
+  <p>A reveal bundle is what the owner hands an auditor: the record, its salt and its hash. Your browser recomputes
+    <code>sha256(record : salt)</code> and asks NEAR whether that hash was committed, and when.</p>
+  <div class="card">
+    <textarea id="bundle" spellcheck="false" aria-label="Reveal bundle JSON">loading demo bundle…</textarea>
+    <div class="row">
+      <label class="muted" for="contract">Contract</label>
+      <select id="contract"></select>
+      <button class="primary" id="verify">Verify on NEAR</button>
+      <button id="tamper">Tamper: price +1</button>
+      <button id="reset">Reset</button>
+    </div>
+    <div id="result" aria-live="polite"></div>
+  </div>
+  <p class="muted">The demo bundle is a synthetic record committed to <code>xyr-shield-demo.testnet</code>, not a real trade.
+    Click <b>Verify</b> to see it check out, then <b>Tamper</b> to change the price by $1 and watch the proof fail.</p>
+
+  <h2>Run the rest locally</h2>
+  <p>The trade-log node, attested <code>/ask</code> and the R oracle (with its tamper test, <code>python -m shield.rverify --tamper</code>)
+    run from the repository. See the <a href="https://github.com/rogermbenites/xyr-shield#run-it">README</a>.</p>
+
+  <footer>
+    <b>Data, not advice.</b> XYR Shield publishes data: commitments, aggregate statistics about past records and indicator
+    values with proof of their history. It gives no buy or sell recommendations or investment advice. Past statistics say
+    nothing about future results. · MIT licensed
+  </footer>
+</main>
+<script>
+const RPC = "https://test.rpc.fastnear.com";
+const CONTRACTS = [
+  ["xyr-shield-demo.testnet", "synthetic demo records (the one below is #1)"],
+  ["xyr-shield-hft.testnet", "live records from a fast strategy, committed seconds after each one"],
+  ["xyr-shield.testnet", "a strategy's historical records (backfilled, so marked late)"],
+  ["xyr-r-oracle.testnet", "R oracle chain-head anchors, every 5 minutes"],
+];
+const $ = id => document.getElementById(id);
+let demo = null;
+
+async function view(contract, method, args) {
+  const r = await fetch(RPC, {method: "POST", headers: {"content-type": "application/json"},
+    body: JSON.stringify({jsonrpc: "2.0", id: 1, method: "query", params: {request_type: "call_function",
+      finality: "final", account_id: contract, method_name: method, args_base64: btoa(JSON.stringify(args))}})});
+  const j = await r.json();
+  if (j.error || j.result.error) throw new Error((j.error && j.error.message) || j.result.error);
+  return JSON.parse(new TextDecoder().decode(new Uint8Array(j.result.result)));
+}
+
+async function sha256hex(s) {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+function sameValue(a, b) {   // payload (parsed) vs canonical (parsed): numbers compare numerically
+  if (typeof a !== typeof b) return false;
+  if (a === null || typeof a !== "object") return a === b;
+  const ka = Object.keys(a).sort(), kb = Object.keys(b).sort();
+  return ka.length === kb.length && ka.every((k, i) => k === kb[i] && sameValue(a[k], b[k]));
+}
+
+function line(ok, text) {
+  return `<div class="check"><span class="${ok ? "ok" : "fail"}">${ok ? "✓" : "✗"}</span><span>${text}</span></div>`;
+}
+
+async function verify() {
+  const out = $("result");
+  out.innerHTML = '<span class="muted">checking…</span>';
+  let b;
+  try { b = JSON.parse($("bundle").value); } catch (e) { out.innerHTML = line(false, "not valid JSON"); return; }
+  if (!b.canonical || !b.salt || !b.payload) { out.innerHTML = line(false, "bundle needs payload, canonical and salt"); return; }
+  const h = await sha256hex(`${b.canonical}:${b.salt}`);
+  let html = "";
+  const matches = sameValue(JSON.parse(b.canonical), b.payload);
+  html += line(matches, matches ? "the hashed text is exactly this record" : "the record shown differs from the text that was hashed");
+  html += line(h === b.hash, `sha256(record : salt) = <code>${h.slice(0, 16)}…</code> ${h === b.hash ? "matches" : "does not match"} the bundle's hash`);
+  try {
+    const rec = await view($("contract").value, "get_commit", {hash: h});
+    if (rec) {
+      const t = new Date(Number(BigInt(rec.ts_ns) / 1000000n)).toISOString().replace(".000", "");
+      html += line(true, `found on NEAR as commit #${rec.n} at block ${rec.block} (${t})`);
+    } else {
+      html += line(false, "this hash was never committed on NEAR");
+    }
+    html += `<p class="${matches && h === b.hash && rec ? "ok" : "fail"}" style="margin-top:8px">${
+      matches && h === b.hash && rec ? "Valid: this record existed at that block time and has not changed since."
+                                     : "Invalid: this is not the record that was committed."}</p>`;
+  } catch (e) {
+    html += line(false, `NEAR lookup failed: ${e.message}`);
+  }
+  out.innerHTML = html;
+}
+
+function tamper() {
+  const b = JSON.parse($("bundle").value);
+  b.payload.price = Math.round((b.payload.price + 1) * 10) / 10;
+  b.canonical = b.canonical.replace(/"price":([\d.]+)/, (_, p) => `"price":${(parseFloat(p) + 1).toFixed(1)}`);
+  $("bundle").value = JSON.stringify(b, null, 2);
+  verify();
+}
+
+async function init() {
+  const sel = $("contract");
+  for (const [c] of CONTRACTS) sel.add(new Option(c, c));
+  for (const [c, what] of CONTRACTS) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td><a href="https://testnet.nearblocks.io/address/${c}">${c}</a></td><td>${what}</td><td class="num">…</td>`;
+    $("contracts").appendChild(tr);
+    view(c, "get_count", {}).then(n => tr.lastChild.textContent = n.toLocaleString())
+      .catch(() => tr.lastChild.textContent = "—");
+  }
+  try {
+    demo = await (await fetch("demo_bundle.json", {cache: "no-store"})).text();
+    $("bundle").value = demo;
+  } catch (e) { $("bundle").value = ""; }
+  if (location.hash === "#verify") verify();          // shareable link that runs the check on load
+  if (location.hash === "#tamper") tamper();
+}
+$("verify").onclick = verify;
+$("tamper").onclick = tamper;
+$("reset").onclick = () => { if (demo) $("bundle").value = demo; $("result").innerHTML = ""; };
+init();
+</script>
+</body>
+</html>

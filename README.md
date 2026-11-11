@@ -4,6 +4,8 @@
 
 Built for the NEAR HACKATHON (Privacy & Private AI).
 
+**Live demo:** https://rogermbenites.github.io/xyr-shield/: verify a committed record against NEAR in your browser, then tamper with it and watch the proof fail. No install needed.
+
 Strategy and indicator sellers have two problems they can't fix at the same time:
 
 - **Buyers don't trust track records.** Losing trades get deleted, winners get backdated, and indicators repaint their history.
@@ -35,6 +37,7 @@ R model (private plug-in) ──closed bar──► hash chain: link_i = sha256(
 ### 1. Shielded trade log (commit and reveal)
 - Each record is stored privately as `payload + random salt`. Only `sha256(payload:salt)` goes to the `ShieldLog` contract, which records the block time and a sequence number `n`.
 - **Reveal:** the owner can hand any trade's `payload + salt` to an auditor. `python -m shield.verify bundle.json` recomputes the hash, finds it on NEAR and reports the lag between the record and its commit. If the lag is under 2 minutes the trade was `called_live`.
+- **Reveal bundles** also carry `canonical`, the exact text that was hashed, so any language (including the browser) can check them without re-serialising numbers.
 - **Completeness:** the payload contains `seq`, so revealing `0..N-1` against the on-chain count proves no trade was dropped.
 - **Real fills:** with `SHIELD_EXEC=on`, each record is traded on the **Hyperliquid testnet** (Hyperliquid is the venue NEAR's perps route to). The fill (order ID, average price, size, fee) is vaulted and committed with the record, so it covers what actually traded, including slippage and fees.
 
@@ -53,6 +56,7 @@ R model (private plug-in) ──closed bar──► hash chain: link_i = sha256(
 
 | Contract | What it holds |
 |---|---|
+| [`xyr-shield-demo.testnet`](https://testnet.nearblocks.io/address/xyr-shield-demo.testnet) | synthetic demo records used by the live demo page |
 | [`xyr-shield.testnet`](https://testnet.nearblocks.io/address/xyr-shield.testnet) | 233 fingerprints of a strategy's historical records (backfilled, so marked late) |
 | [`xyr-shield-hft.testnet`](https://testnet.nearblocks.io/address/xyr-shield-hft.testnet) | live records from a fast strategy, each committed 2–3 s after it fired |
 | [`xyr-r-oracle.testnet`](https://testnet.nearblocks.io/address/xyr-r-oracle.testnet) | R chain-head anchors, every 5 minutes |
