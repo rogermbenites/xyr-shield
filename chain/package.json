@@ -1,0 +1,8 @@
+{
+  "name": "xyr-shield-chain",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "near-api-js": "4.0.4"
+  }
+}

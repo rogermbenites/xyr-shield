@@ -1,0 +1,11 @@
+{
+  "name": "xyr-shield-contract",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "near-sdk-js build src/contract.js build/shield_log.wasm"
+  },
+  "dependencies": {
+    "near-sdk-js": "2.0.0"
+  }
+}
