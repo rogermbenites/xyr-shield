@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>XYR Shield</title>
-<meta name="description" content="Prove trading data is honest without revealing the strategy behind it. Commit-reveal records, attested NEAR AI stats and a no-repaint R oracle on NEAR.">
+<meta name="description" content="XYR: adaptive cycle detection for 24/7 crypto markets, with a privacy layer on NEAR that proves the data is honest without revealing the model or the traders.">
 <style>
   :root{
     --bg:#ffffff; --surface:#f6f7f9; --text:#16181d; --muted:#5f6672; --line:#e3e6eb;
@@ -50,15 +50,73 @@
   .muted{color:var(--muted);font-size:14px}
   .table-wrap{overflow-x:auto}
   footer{margin-top:48px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+  .eyebrow{font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+  .step{display:inline-grid;place-items:center;width:26px;height:26px;margin-right:8px;border-radius:50%;
+    background:var(--accent);color:var(--bg);font-size:14px;vertical-align:2px}
+  .model{display:grid;grid-template-columns:1fr 1.25fr;gap:24px;align-items:center}
+  .points p{margin:0 0 14px}
+  .track{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .track svg{display:block;width:100%;height:auto;color:var(--text)}
+  .track .lbl{font:600 28px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .track .mid{font:26px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;opacity:.7}
+  .track figcaption{font-size:14px;color:var(--muted);margin-top:6px}
+  .sessions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0 8px}
+  .sessions div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .sessions b{display:block;font-size:22px}
+  .sessions span{font-size:14px;color:var(--muted)}
+  .sessions .close{border-color:var(--accent)} .sessions .close b{color:var(--accent)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:640px){.model,.two,.sessions{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <main>
-  <h1>XYR Shield</h1>
-  <p class="lead">Prove trading data is honest without revealing the strategy behind it.</p>
-  <p class="muted">Built for the NEAR HACKATHON · <a href="https://github.com/rogermbenites/xyr-shield">source on GitHub</a></p>
+  <p class="eyebrow">XYR · cycle detection + a privacy layer on NEAR</p>
+  <h1>Cycle detection for a market that never closes</h1>
+  <p class="lead">The XYR model tells traders where the market is in its cycle. XYR Shield proves that data is honest, on NEAR, without revealing the model or the traders.</p>
+  <p class="muted">3rd place · NEAR Private AI Hackathon NYC · <a href="https://github.com/rogermbenites/xyr-shield">source on GitHub</a></p>
 
-  <h2>What stays private, what is proven</h2>
+  <h2><span class="step">1</span> The XYR model</h2>
+  <div class="model">
+    <div class="points">
+      <p><b>Moving averages can’t keep up.</b> Crypto trades 24/7, and traditional indicators don’t adapt to its changing speed.</p>
+      <p><b>R adapts.</b> An RSI-based model, three years in the making, that adapts to the speed of bitcoin and crypto markets.</p>
+      <p><b>Sessions track it live.</b> The framework follows the cycle in real time, session by session.</p>
+    </div>
+    <figure class="track">
+      <svg viewBox="0 0 760 430" role="img" aria-label="An oval racetrack: the upper-left section is green for INCREASE, the top is amber for HOLD, the right side is red for DECREASE, the bottom is amber for HOLD; a dot on the green section marks spot price">
+        <path d="M40,210 A320,160 0 0 1 360,50" fill="none" stroke="#1fb978" stroke-width="18" stroke-linecap="round"/>
+        <path d="M360,50 A320,160 0 0 1 680,210" fill="none" stroke="#e8a12a" stroke-width="18" stroke-linecap="round"/>
+        <path d="M680,210 A320,160 0 0 1 360,370" fill="none" stroke="#e5505b" stroke-width="18" stroke-linecap="round"/>
+        <path d="M360,370 A320,160 0 0 1 40,210" fill="none" stroke="#e8a12a" stroke-width="18" stroke-linecap="round"/>
+        <circle cx="134" cy="97" r="17" fill="currentColor" stroke="var(--bg)" stroke-width="5"/>
+        <text x="8" y="46" class="lbl" fill="#1fb978">INCREASE</text>
+        <text x="380" y="30" class="lbl" fill="#e8a12a" text-anchor="middle">HOLD</text>
+        <text x="752" y="352" class="lbl" fill="#e5505b" text-anchor="end">DECREASE</text>
+        <text x="380" y="418" class="lbl" fill="#e8a12a" text-anchor="middle">HOLD</text>
+        <text x="162" y="132" class="lbl" fill="currentColor">Spot price</text>
+        <text x="380" y="216" class="mid" fill="currentColor" text-anchor="middle">Where are we in the cycle?</text>
+      </svg>
+      <figcaption>The market is the racetrack; spot price is the vehicle. R estimates where it is in the cycle.</figcaption>
+    </figure>
+  </div>
+  <div class="sessions">
+    <div><b>ON</b><span>Overnight, from 3:00 AM ET</span></div>
+    <div><b>O</b><span>The open, from 9:30 AM ET</span></div>
+    <div class="close"><b>C</b><span>Close, 4:00 PM ET: daily R locks</span></div>
+  </div>
+  <p class="muted">Read top-down: Weekly → Daily → Session → Intraday. Each layer closes on a fixed clock, and a closed value must never change.</p>
+
+  <h2><span class="step">2</span> The problem: whose data is right, and who is watching?</h2>
+  <div class="two">
+    <div class="card"><b>Price feeds disagree.</b> Binance and Coinbase print slightly different prices for the same moment, and one
+      price difference changes the model’s values. The model has to be verified on-chain, privately, without exposing how it works.</div>
+    <div class="card"><b>Traders don’t want to be seen.</b> Visible positions and timing attract predatory market makers.
+      Shielding the trades keeps traders anonymous, and still provable.</div>
+  </div>
+
+  <h2><span class="step">3</span> The privacy layer: XYR Shield</h2>
+  <p>What stays private, and what is proven on NEAR:</p>
   <div class="table-wrap"><table>
     <tr><th>Component</th><th>Stays private</th><th>Proven on NEAR</th></tr>
     <tr><td>Shielded trade log</td><td>every record (time, side, price, fill)</td><td>it existed at that moment and was never edited, deleted or backdated</td></tr>
